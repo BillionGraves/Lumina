@@ -28,11 +28,18 @@ extension LuminaCamera: AVCaptureVideoDataOutputSampleBufferDelegate {
                     }
                     return
                 }
-                recognizer.recognize(from: image, completion: { results in
+                
+                if self.recordingVideo {
+                    recognizer.recognize(from: image, completion: { results in
+                        DispatchQueue.main.async {
+                            self.delegate?.videoFrameCaptured(camera: self, frame: image, predictedObjects: results)
+                        }
+                    })
+                } else {
                     DispatchQueue.main.async {
-                        self.delegate?.videoFrameCaptured(camera: self, frame: image, predictedObjects: results)
+                        self.delegate?.videoFrameCaptured(camera: self, frame: image)
                     }
-                })
+                }
             } else {
                 DispatchQueue.main.async {
                     self.delegate?.videoFrameCaptured(camera: self, frame: image)

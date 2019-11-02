@@ -9,7 +9,7 @@
 import Foundation
 import CoreML
 
-extension LuminaViewController: LuminaCameraDelegate {
+extension LuminaViewController: LuminaCameraDelegate {LuminaRecognitionResult
     func videoFrameCaptured(camera: LuminaCamera, frame: UIImage, predictedObjects: [LuminaRecognitionResult]?) {
         delegate?.streamed(videoFrame: frame, with: predictedObjects, from: self)
     }
