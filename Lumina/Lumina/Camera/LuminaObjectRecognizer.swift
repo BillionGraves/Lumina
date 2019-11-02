@@ -18,6 +18,8 @@ public struct LuminaPrediction {
     public var confidence: Float
     /// The unique identifier associated with this prediction, as determined by the Vision framework
     public var UUID: UUID
+    /// The bounding box for object detection models that return VNDetectedObjectObservation
+    public var bbox: CGRect?
 }
 
 /// An object that represents a collection of predictions that Lumina detects, along with their associated types
@@ -81,7 +83,11 @@ final class LuminaObjectRecognizer: NSObject {
         var results = [LuminaPrediction]()
         for object in objects {
             if let object = object as? VNClassificationObservation {
-                results.append(LuminaPrediction(name: object.identifier, confidence: object.confidence, UUID: object.uuid))
+                results.append(LuminaPrediction(name: object.identifier, confidence: object.confidence, UUID: object.uuid, bbox: nil))
+            } else if let object = object as? VNDetectedObjectObservation {
+                if #available(iOS 12, *) {
+                    results.append(LuminaPrediction(name: object.label, confidence: object.confidenceScore, UUID: object.uuid, bbox: object.boundingBox))
+                }
             }
         }
         return results.sorted(by: {
@@ -89,3 +95,28 @@ final class LuminaObjectRecognizer: NSObject {
         })
     }
 }
+
+@available(iOS 12.0, *)
+extension VNDetectedObjectObservation {
+    var label: String {
+        if let observation = self as? VNRecognizedObjectObservation {
+            if let label = observation.labels.first?.identifier {
+                return label
+            }
+        }
+        return "Object"
+    }
+}
+
+@available(iOS 12.0, *)
+extension VNDetectedObjectObservation {
+    var confidenceScore: Float {
+        if let observation = self as? VNRecognizedObjectObservation {
+            if let confidence = observation.labels.first?.confidence {
+                return confidence
+            }
+        }
+        return 0
+    }
+}
+
