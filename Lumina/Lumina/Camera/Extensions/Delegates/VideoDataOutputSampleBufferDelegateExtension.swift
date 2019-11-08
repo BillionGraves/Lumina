@@ -14,6 +14,9 @@ extension LuminaCamera: AVCaptureVideoDataOutputSampleBufferDelegate {
         guard let image = sampleBuffer.normalizedVideoFrame() else {
             return
         }
+        DispatchQueue.main.async {
+            self.delegate?.videoFrameCaptured(camera: self, frame: image)
+        }
         if #available(iOS 11.0, *) {
             if let modelPairs = self.streamingModels {
                 LuminaLogger.notice(message: "valid CoreML models present - attempting to scan photo")
@@ -23,31 +26,14 @@ extension LuminaCamera: AVCaptureVideoDataOutputSampleBufferDelegate {
                 }
                 guard let recognizer = self.recognizer as? LuminaObjectRecognizer else {
                     LuminaLogger.error(message: "models loaded, but could not use object recognizer")
-                    DispatchQueue.main.async {
-                        self.delegate?.videoFrameCaptured(camera: self, frame: image)
-                    }
                     return
                 }
                 
-                if self.recordingVideo {
-                    recognizer.recognize(from: image, completion: { results in
-                        DispatchQueue.main.async {
-                            self.delegate?.videoFrameCaptured(camera: self, frame: image, predictedObjects: results)
-                        }
-                    })
-                } else {
+                recognizer.recognize(from: image, completion: { results in
                     DispatchQueue.main.async {
-                        self.delegate?.videoFrameCaptured(camera: self, frame: image)
+                        self.delegate?.videoFrameCaptured(camera: self, frame: image, predictedObjects: results)
                     }
-                }
-            } else {
-                DispatchQueue.main.async {
-                    self.delegate?.videoFrameCaptured(camera: self, frame: image)
-                }
-            }
-        } else {
-            DispatchQueue.main.async {
-                self.delegate?.videoFrameCaptured(camera: self, frame: image)
+                })
             }
         }
     }

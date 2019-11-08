@@ -10,7 +10,7 @@ import Foundation
 import CoreML
 
 extension LuminaViewController: LuminaCameraDelegate {
-    func videoFrameCaptured(camera: LuminaCamera, frame: UIImage, predictedObjects: [LuminaRecognitionResult]?) {
+    func videoFrameCaptured(camera: LuminaCamera, frame: CVImageBuffer, predictedObjects: [LuminaRecognitionResult]?) {
         delegate?.streamed(videoFrame: frame, with: predictedObjects, from: self)
     }
 
@@ -29,7 +29,7 @@ extension LuminaViewController: LuminaCameraDelegate {
         delegate?.captured(stillImage: image, livePhotoAt: livePhotoURL, depthData: depthData, from: self)
     }
 
-    func videoFrameCaptured(camera: LuminaCamera, frame: UIImage) {
+    func videoFrameCaptured(camera: LuminaCamera, frame: CVImageBuffer) {
         delegate?.streamed(videoFrame: frame, from: self)
     }
 

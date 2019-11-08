@@ -39,11 +39,7 @@ final class LuminaObjectRecognizer: NSObject {
         self.modelPairs = modelPairs
     }
 
-    func recognize(from image: UIImage, completion: @escaping ([LuminaRecognitionResult]?) -> Void) {
-        guard let coreImage = image.cgImage else {
-            completion(nil)
-            return
-        }
+    func recognize(from image: CVImageBuffer, completion: @escaping ([LuminaRecognitionResult]?) -> Void) {
         var recognitionResults = [LuminaRecognitionResult]()
         let recognitionGroup = DispatchGroup()
         for modelPair in modelPairs {
@@ -66,7 +62,7 @@ final class LuminaObjectRecognizer: NSObject {
                     recognitionGroup.leave()
                 }
             }
-            let handler = VNImageRequestHandler(cgImage: coreImage)
+            let handler = VNImageRequestHandler(cvPixelBuffer: image)
             do {
                 try handler.perform([request])
             } catch {

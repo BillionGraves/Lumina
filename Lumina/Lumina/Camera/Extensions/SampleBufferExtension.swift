@@ -25,17 +25,12 @@ extension CMSampleBuffer {
         return UIImage(cgImage: cgImageRef, scale: 1.0, orientation: getImageOrientation(forCamera: position))
     }
 
-    func normalizedVideoFrame() -> UIImage? {
+    func normalizedVideoFrame() -> CVImageBuffer? {
         LuminaLogger.notice(message: "normalizing video frame from CMSampleBbuffer")
         guard let imageBuffer = CMSampleBufferGetImageBuffer(self) else {
             return nil
         }
-        let coreImage: CIImage = CIImage(cvPixelBuffer: imageBuffer)
-        let context: CIContext = CIContext()
-        guard let sample: CGImage = context.createCGImage(coreImage, from: coreImage.extent) else {
-            return nil
-        }
-        return UIImage(cgImage: sample)
+        return imageBuffer
     }
 
     private func getImageOrientation(forCamera: CameraPosition) -> UIImage.Orientation {
