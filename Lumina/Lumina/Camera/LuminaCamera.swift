@@ -11,10 +11,10 @@ import AVFoundation
 import CoreML
 
 protocol LuminaCameraDelegate: class {
-    func stillImageCaptured(camera: LuminaCamera, image: CVImageBuffer, livePhotoURL: URL?, depthData: Any?)
+    func stillImageCaptured(camera: LuminaCamera, image: UIImage, livePhotoURL: URL?, depthData: Any?)
     func videoFrameCaptured(camera: LuminaCamera, frame: CVImageBuffer)
     @available (iOS 11.0, *)
-    func videoFrameCaptured(camera: LuminaCamera, frame: UIImage, predictedObjects: [LuminaRecognitionResult]?)
+    func videoFrameCaptured(camera: LuminaCamera, frame: CVImageBuffer, predictedObjects: [LuminaRecognitionResult]?)
     func depthDataCaptured(camera: LuminaCamera, depthData: Any)
     func videoRecordingCaptured(camera: LuminaCamera, videoURL: URL)
     func finishedFocus(camera: LuminaCamera)
