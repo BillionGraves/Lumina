@@ -96,6 +96,25 @@ final class LuminaObjectRecognizer: NSObject {
     }
 }
 
+extension LuminaPrediction {
+    public func overlap(_ prediction: LuminaPrediction) -> Float {
+        if let rect1 = self.bbox {
+            if let rect2 = prediction.bbox {
+                let x_overlap = max(0, min(rect1.maxX, rect2.maxX) - max(rect1.minX, rect2.minX));
+                let y_overlap = max(0, min(rect1.maxY, rect2.maxY) - max(rect1.minY, rect2.minY));
+                let overlapArea = x_overlap * y_overlap;
+                return Float(overlapArea) / (Float(rect1.maxX - rect1.minX) * Float(rect1.maxY - rect1.minY))
+            }
+        }
+        return 0
+    }
+    
+    public func isSame(_ prediction: LuminaPrediction) -> Bool {
+        let overlap = self.overlap(prediction)
+        return overlap > 0.2
+    }
+}
+
 @available(iOS 12.0, *)
 extension VNDetectedObjectObservation {
     var label: String {
