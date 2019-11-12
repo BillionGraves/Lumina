@@ -29,7 +29,7 @@ extension LuminaViewController: LuminaCameraDelegate {
         delegate?.captured(stillImage: image, livePhotoAt: livePhotoURL, depthData: depthData, from: self)
     }
 
-    func videoFrameCaptured(camera: LuminaCamera, frame: CVImageBuffer) {
+    func videoFrameCaptured(camera: LuminaCamera, frame: CVImageBuffer, rawFrame: CMSampleBuffer) {
         delegate?.streamed(videoFrame: frame, from: self)
     }
 
