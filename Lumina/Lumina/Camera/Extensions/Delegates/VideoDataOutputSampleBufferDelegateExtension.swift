@@ -15,7 +15,7 @@ extension LuminaCamera: AVCaptureVideoDataOutputSampleBufferDelegate {
             return
         }
         DispatchQueue.main.async {
-            self.delegate?.videoFrameCaptured(camera: self, frame: image)
+            self.delegate?.videoFrameCaptured(camera: self, frame: image, rawFrame: sampleBuffer)
         }
         if #available(iOS 11.0, *) {
             if let modelPairs = self.streamingModels {

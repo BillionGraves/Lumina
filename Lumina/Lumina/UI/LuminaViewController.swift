@@ -14,12 +14,25 @@ import CoreML
 open class LuminaViewController: UIViewController {
     internal var logger = Logger(label: "com.okun.Lumina")
     var camera: LuminaCamera?
+    var assetWriter: AVAssetWriter?
+    var videoInput: AVAssetWriterInput?
+    var isRecordingFrames = false
     public var torchState: TorchState {
         get {
             return camera?.torchState ?? .off
         }
         set(newValue) {
             camera?.torchState = newValue
+        }
+    }
+    
+    @objc public func setTorchState(torchState: Int) {
+        if (torchState == 0) {
+            self.torchState = .off
+        } else if (torchState == 1) {
+            self.torchState = .on(intensity: 1)
+        } else if (torchState == 2) {
+            self.torchState = .auto
         }
     }
 
@@ -126,12 +139,12 @@ open class LuminaViewController: UIViewController {
     var isUpdating = false
 
     /// The delegate for streaming output from Lumina
-    weak open var delegate: LuminaDelegate?
+    @objc weak open var delegate: LuminaDelegate?
 
     /// The position of the camera
     ///
     /// - Note: Responds live to being set at any time, and will update automatically
-    open var position: CameraPosition = .back {
+    @objc open var position: CameraPosition = .back {
         didSet {
             LuminaLogger.notice(message: "Switching camera position to \(position.rawValue)")
             guard let camera = self.camera else {
@@ -146,7 +159,7 @@ open class LuminaViewController: UIViewController {
     /// - Note: Responds live to being set at any time, and will update automatically
     ///
     /// - Warning: This setting takes precedence over video data streaming - if this is turned on, frames cannot be streamed, nor can CoreML be used via Lumina's recognizer mechanism. 
-    open var recordsVideo = false {
+    @objc open var recordsVideo = false {
         didSet {
             LuminaLogger.notice(message: "Setting video recording mode to \(recordsVideo)")
             self.camera?.recordsVideo = recordsVideo
@@ -161,7 +174,7 @@ open class LuminaViewController: UIViewController {
     /// - Note: Responds live to being set at any time, and will update automatically
     ///
     /// - Warning: Will not do anything if delegate is not implemented
-    open var streamFrames = false {
+    @objc open var streamFrames = false {
         didSet {
             LuminaLogger.notice(message: "Setting frame streaming mode to \(streamFrames)")
             self.camera?.streamFrames = streamFrames
@@ -173,7 +186,7 @@ open class LuminaViewController: UIViewController {
     /// - Note: Responds live to being set at any time, and will update automatically
     ///
     /// - Warning: Will not do anything if delegate is not implemented
-    open var trackMetadata = false {
+    @objc open var trackMetadata = false {
         didSet {
             LuminaLogger.notice(message: "Setting metadata tracking mode to \(trackMetadata)")
             self.camera?.trackMetadata = trackMetadata
@@ -185,7 +198,7 @@ open class LuminaViewController: UIViewController {
     /// - Note: Responds live to being set at any time, and will update automatically
     ///
     /// - Warning: If left empty, or unset, no view will be present, but view will be created if changed
-    open var textPrompt = "" {
+    @objc open var textPrompt = "" {
         didSet {
             LuminaLogger.notice(message: "Updating text prompt view to: \(textPrompt)")
             self.textPromptView.updateText(to: textPrompt)
@@ -195,7 +208,7 @@ open class LuminaViewController: UIViewController {
     /// Set this to choose a resolution for the camera at any time - defaults to highest resolution possible for camera
     ///
     /// - Note: Responds live to being set at any time, and will update automatically
-    open var resolution: CameraResolution = .highest {
+    @objc open var resolution: CameraResolution = .highest {
         didSet {
             LuminaLogger.notice(message: "Updating camera resolution to \(resolution.rawValue)")
             self.camera?.resolution = resolution
@@ -205,7 +218,7 @@ open class LuminaViewController: UIViewController {
     /// Set this to choose a frame rate for the camera at any time - defaults to 30 if query is not available
     ///
     /// - Note: Responds live to being set at any time, and will update automatically
-    open var frameRate: Int = 30 {
+    @objc open var frameRate: Int = 30 {
         didSet {
             LuminaLogger.notice(message: "Attempting to update camera frame rate to \(frameRate) FPS")
             self.camera?.frameRate = frameRate
@@ -213,27 +226,27 @@ open class LuminaViewController: UIViewController {
     }
 
     /// Setting visibility of the buttons (default: all buttons are visible)
-    public func setCancelButton(visible: Bool) {
+    @objc public func setCancelButton(visible: Bool) {
         cancelButton.isHidden = !visible
     }
 
-    public func setShutterButton(visible: Bool) {
+    @objc public func setShutterButton(visible: Bool) {
         shutterButton.isHidden = !visible
     }
 
-    public func setSwitchButton(visible: Bool) {
+    @objc public func setSwitchButton(visible: Bool) {
         switchButton.isHidden = !visible
     }
 
-    public func setTorchButton(visible: Bool) {
+    @objc public func setTorchButton(visible: Bool) {
         torchButton.isHidden = !visible
     }
 
-    public func pauseCamera() {
+    @objc public func pauseCamera() {
         self.camera?.stop()
     }
 
-    public func startCamera() {
+    @objc public func startCamera() {
         self.camera?.start()
     }
 
@@ -242,7 +255,7 @@ open class LuminaViewController: UIViewController {
     /// - Note: Only works on iOS 11 and up
     ///
     /// - Warning: If this is set, streamFrames is over-ridden to true
-    open var streamingModels: [AnyObject]? {
+    @objc open var streamingModels: [AnyObject]? {
         didSet {
             if #available(iOS 11.0, *) {
                 guard let streamingModels = self.streamingModels else {
@@ -269,7 +282,7 @@ open class LuminaViewController: UIViewController {
     /// The maximum amount of zoom that Lumina can use
     ///
     /// - Note: Default value will rely on whatever the active device can handle, if this is not explicitly set
-    open var maxZoomScale: Float = MAXFLOAT {
+    @objc open var maxZoomScale: Float = MAXFLOAT {
         didSet {
             LuminaLogger.notice(message: "Max zoom scale set to \(maxZoomScale)x")
             self.camera?.maxZoomScale = maxZoomScale
@@ -281,7 +294,7 @@ open class LuminaViewController: UIViewController {
     /// - Note: Overrides cameraResolution to .photo
     ///
     /// - Warning: If video recording is enabled, live photos will not work.
-    open var captureLivePhotos: Bool = false {
+    @objc open var captureLivePhotos: Bool = false {
         didSet {
             LuminaLogger.notice(message: "Attempting to set live photo capture mode to \(captureLivePhotos)")
             self.camera?.captureLivePhotos = captureLivePhotos
@@ -292,7 +305,7 @@ open class LuminaViewController: UIViewController {
     ///
     /// - Note: Only works on iOS 11.0 or higher
     /// - Note: Only works with .photo, .medium1280x720, and .vga640x480 resolutions
-    open var captureDepthData: Bool = false {
+    @objc open var captureDepthData: Bool = false {
         didSet {
             LuminaLogger.notice(message: "Attempting to set depth data capture mode to \(captureDepthData)")
             self.camera?.captureDepthData = captureDepthData
@@ -303,7 +316,7 @@ open class LuminaViewController: UIViewController {
     ///
     /// - Note: Only works on iOS 11.0 or higher
     /// - Note: Only works with .photo, .medium1280x720, and .vga640x480 resolutions
-    open var streamDepthData: Bool = false {
+    @objc open var streamDepthData: Bool = false {
         didSet {
             LuminaLogger.notice(message: "Attempting to set depth data streaming mode to \(streamDepthData)")
             self.camera?.streamDepthData = streamDepthData
@@ -317,7 +330,7 @@ open class LuminaViewController: UIViewController {
         }
     }
 
-    public var currentZoomScale: Float = 1.0 {
+    @objc public var currentZoomScale: Float = 1.0 {
         didSet {
             self.camera?.currentZoomScale = currentZoomScale
         }

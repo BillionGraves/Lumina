@@ -12,7 +12,7 @@ import CoreML
 
 protocol LuminaCameraDelegate: class {
     func stillImageCaptured(camera: LuminaCamera, image: UIImage, livePhotoURL: URL?, depthData: Any?)
-    func videoFrameCaptured(camera: LuminaCamera, frame: CVImageBuffer)
+    func videoFrameCaptured(camera: LuminaCamera, frame: CVImageBuffer, rawFrame: CMSampleBuffer)
     @available (iOS 11.0, *)
     func videoFrameCaptured(camera: LuminaCamera, frame: CVImageBuffer, predictedObjects: [LuminaRecognitionResult]?)
     func depthDataCaptured(camera: LuminaCamera, depthData: Any)

@@ -10,11 +10,18 @@ import Foundation
 import AVFoundation
 
 /// The position of the camera that is active on Lumina
-public enum CameraPosition: String {
+public enum CameraPosition: Int {
     /// the front facing camera of the iOS device
     case front
     /// the back (and usually main) facing camera of the iOS device
     case back
+    
+    func name() -> String {
+        switch self {
+        case .front: return "front"
+        case .back: return "back"
+        }
+    }
 }
 
 /// The resolution to set the camera to at any time - refer to AVCaptureSession.Preset definitions for matching, closest as of iOS 11
