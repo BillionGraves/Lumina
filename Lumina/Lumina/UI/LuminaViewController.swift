@@ -139,7 +139,7 @@ open class LuminaViewController: UIViewController {
     var isUpdating = false
 
     /// The delegate for streaming output from Lumina
-    @objc weak open var delegate: LuminaDelegate?
+    weak open var delegate: LuminaDelegate?
 
     /// The position of the camera
     ///
@@ -208,10 +208,23 @@ open class LuminaViewController: UIViewController {
     /// Set this to choose a resolution for the camera at any time - defaults to highest resolution possible for camera
     ///
     /// - Note: Responds live to being set at any time, and will update automatically
-    @objc open var resolution: CameraResolution = .highest {
+    open var resolution: CameraResolution = .highest {
         didSet {
             LuminaLogger.notice(message: "Updating camera resolution to \(resolution.rawValue)")
             self.camera?.resolution = resolution
+        }
+    }
+    
+    @objc public func setResolution(resolution: SimpleCameraResolution) {
+        switch resolution {
+        case .high:
+            self.resolution = .highest
+        case .medium:
+            self.resolution = .medium
+        case .low:
+            self.resolution = .lowest
+        default:
+            self.resolution = .highest
         }
     }
 
