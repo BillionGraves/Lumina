@@ -144,7 +144,7 @@ open class LuminaViewController: UIViewController {
     /// The position of the camera
     ///
     /// - Note: Responds live to being set at any time, and will update automatically
-    @objc open var position: CameraPosition = .back {
+    open var position: CameraPosition = .back {
         didSet {
             LuminaLogger.notice(message: "Switching camera position to \(position.rawValue)")
             guard let camera = self.camera else {
@@ -212,19 +212,6 @@ open class LuminaViewController: UIViewController {
         didSet {
             LuminaLogger.notice(message: "Updating camera resolution to \(resolution.rawValue)")
             self.camera?.resolution = resolution
-        }
-    }
-    
-    @objc public func setResolution(resolution: SimpleCameraResolution) {
-        switch resolution {
-        case .high:
-            self.resolution = .highest
-        case .medium:
-            self.resolution = .medium
-        case .low:
-            self.resolution = .lowest
-        default:
-            self.resolution = .highest
         }
     }
 
