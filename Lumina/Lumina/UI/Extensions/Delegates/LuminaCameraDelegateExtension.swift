@@ -8,6 +8,7 @@
 
 import Foundation
 import CoreML
+import AVFoundation
 
 extension LuminaViewController: LuminaCameraDelegate {
     func videoFrameCaptured(camera: LuminaCamera, frame: CVImageBuffer, predictedObjects: [LuminaRecognitionResult]?) {

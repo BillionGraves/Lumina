@@ -224,6 +224,10 @@ open class LuminaViewController: UIViewController {
             self.camera?.frameRate = frameRate
         }
     }
+    
+    public func takePicture() {
+        camera?.captureStillImage()
+    }
 
     /// Setting visibility of the buttons (default: all buttons are visible)
     @objc public func setCancelButton(visible: Bool) {
